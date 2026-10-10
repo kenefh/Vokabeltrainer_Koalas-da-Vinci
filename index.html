@@ -1,0 +1,1813 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Koalas da Vinci</title>
+<meta name="theme-color" content="#4f8a6b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Koalas">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-180.png">
+<style>
+:root{
+  --bg:#f3f6f1; --card:#ffffff; --primary:#4f8a6b; --primary-d:#3b6e53;
+  --ok:#2e9e5b; --ok-bg:#e3f7ea; --bad:#d64545; --bad-bg:#fde8e8;
+  --text:#2b2a24; --muted:#6f6b5e; --border:#d9dccf; --star:#e0a100;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;font-size:18px;line-height:1.45;background:var(--bg);color:var(--text);-webkit-text-size-adjust:100%}
+header{background:linear-gradient(135deg,#4f8a6b,#6b9e84);color:#fff;padding:14px 16px}
+header .ver{font-size:.85rem;opacity:.85;margin-top:2px}
+header h1{margin:0;font-size:1.5rem}
+nav{display:flex;flex-wrap:wrap;gap:8px;padding:10px 12px;background:#fff;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:5}
+nav button{background:#eef5ee;color:var(--primary-d)}
+nav button.active{background:var(--primary);color:#fff}
+main{max-width:760px;margin:0 auto;padding:16px}
+.view{display:none}
+.view.active{display:block}
+.card{background:var(--card);border-radius:16px;padding:18px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+h2{margin:0 0 12px;font-size:1.4rem}
+h3{margin:18px 0 8px;font-size:1.1rem}
+button{font:inherit;cursor:pointer;border:none;border-radius:12px;padding:12px 18px;min-height:48px;background:var(--primary);color:#fff;font-weight:600;touch-action:manipulation}
+button:hover{background:var(--primary-d)}
+button.secondary{background:#e3efe6;color:var(--primary-d)}
+button.secondary:hover{background:#d3e6d9}
+button.danger{background:var(--bad)}
+button.danger:hover{background:#b83636}
+button.ghost{background:transparent;color:var(--muted);border:2px solid var(--border)}
+button.big-btn{width:100%;font-size:1.3rem;padding:18px}
+button:disabled{opacity:.5;cursor:not-allowed}
+input[type=text],input[type=search]{font:inherit;width:100%;padding:12px;border:2px solid var(--border);border-radius:12px;background:#fff;min-height:48px;color:var(--text)}
+input:focus{outline:3px solid #b9bcf5;border-color:var(--primary)}
+label{display:block;font-weight:600;margin:12px 0 6px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.row.center{justify-content:center}
+.muted{color:var(--muted)}
+.hidden{display:none !important}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px}
+.stat{background:#eef5ee;border-radius:14px;padding:14px;text-align:center}
+.stat b{display:block;font-size:1.6rem}
+.msg{padding:12px 14px;border-radius:12px;margin:10px 0}
+.msg.ok{background:var(--ok-bg);color:#17643a}
+.msg.bad{background:var(--bad-bg);color:#8d2222}
+.msg.info{background:#e8f2ec;color:#333a7a}
+.list-item{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:12px 4px;border-bottom:1px solid var(--border)}
+.pill{display:inline-block;background:#e8f2ec;color:var(--primary-d);border-radius:999px;padding:4px 12px;font-size:.9rem;font-weight:600}
+.pill.warn{background:#fff3cd;color:#7a5600}
+.progress{height:14px;background:#e3e6f8;border-radius:10px;overflow:hidden;margin:8px 0}
+.progress div{height:100%;background:var(--ok);transition:width .3s}
+.big{font-size:2rem;font-weight:700;text-align:center;margin:12px 0;word-break:break-word}
+.option{display:block;width:100%;margin:8px 0;background:#fff;color:var(--text);border:2px solid var(--border);text-align:left;font-weight:500}
+.option:hover{background:#eef5ee}
+.option.correct{background:var(--ok-bg);border-color:var(--ok)}
+.option.wrong{background:var(--bad-bg);border-color:var(--bad)}
+.choices{display:flex;flex-direction:column;gap:8px}
+.choice{display:flex;flex-direction:column;border:2px solid var(--border);border-radius:14px;padding:12px;background:#fff;cursor:pointer;font-weight:500;margin:0}
+.choice small{color:var(--muted);font-weight:400}
+.choice:has(input:checked){border-color:var(--primary);background:#eef5ee}
+.choice input{width:22px;height:22px;margin-right:8px;vertical-align:middle}
+.check{display:flex;align-items:center;gap:8px;margin:0;font-weight:500}
+.check input{width:22px;height:22px}
+.pick-list{max-height:260px;overflow-y:auto;border:2px solid var(--border);border-radius:12px;padding:8px 12px;margin-top:8px;background:#fff}
+.review-row{border:2px dashed var(--border);border-radius:14px;padding:12px;margin:10px 0;display:grid;gap:8px}
+.review-row.skip{opacity:.5}
+.stars{font-size:1.8rem;color:var(--star);letter-spacing:4px;text-align:center}
+.badge{display:inline-block;margin:4px;padding:8px 12px;border-radius:12px;background:#eee;color:#777;font-weight:600}
+.badge.earned{background:#fff6d6;color:#7a5600}
+.file-btn{display:inline-block;background:#e3efe6;color:var(--primary-d);border-radius:12px;padding:12px 18px;min-height:48px;font-weight:600;cursor:pointer;line-height:24px}
+.toast{position:fixed;left:50%;bottom:20px;transform:translate(-50%,150%);transition:transform .3s;background:#1f2340;color:#fff;padding:12px 18px;border-radius:12px;max-width:90vw;z-index:20;font-weight:500}
+.toast.show{transform:translate(-50%,0)}
+.toast.bad{background:#b03030}
+.wrong-input{border-color:var(--bad)!important;background:var(--bad-bg)!important}
+.word-line{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 4px}
+.w-ok{background:#d6efdc;color:#1d6b3a;border-radius:10px;padding:4px 10px;font-weight:600}
+.w-bad{background:#fbd3d3;color:#8d2222;border-radius:10px;padding:4px 10px;font-weight:700;text-decoration:underline wavy #d64545}
+.w-miss{background:#fbd3d3;color:#8d2222;border:2px dashed #d64545;border-radius:10px;padding:2px 8px;font-weight:600}
+.powered{text-align:center;color:var(--muted);font-size:.85rem;padding:8px 0 28px}
+
+details{margin:10px 0}
+summary{cursor:pointer;padding:6px 0}
+.pair{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--border);font-weight:500;cursor:pointer}
+.pair input{width:22px;height:22px;margin-top:4px}
+
+@media (max-width:480px){
+  body{font-size:17px}
+  main{padding:12px}
+  .card{padding:14px}
+  input[type=text]{font-size:16px}
+}
+.ask{position:fixed;inset:0;background:rgba(20,22,40,.5);display:flex;align-items:center;justify-content:center;padding:16px;z-index:30}
+.ask-box{background:#fff;color:#1f2340;border-radius:16px;padding:20px;max-width:460px;width:100%;display:grid;gap:12px;max-height:90vh;overflow:auto;box-sizing:border-box}
+.ask-box h2{margin:0}
+.ask textarea,.paste-import textarea{width:100%;box-sizing:border-box;font:13px/1.4 monospace;padding:10px;border-radius:10px;border:1px solid #ccc}
+.paste-import{margin-top:10px}
+.paste-import summary{cursor:pointer;font-weight:600}
+.ask-btns{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
+</style>
+</head>
+<body>
+<header><h1>🐨 Koalas da Vinci</h1><div class="ver" id="app-version"></div></header>
+
+<nav>
+  <button data-go="home">🏠 Start</button>
+  <button data-go="add">➕ Hinzufügen</button>
+  <button data-go="manage">📚 Verwalten</button>
+  <button data-go="learn">🎮 Lernen</button>
+  <button data-go="progress">🏆 Fortschritt</button>
+</nav>
+
+<main>
+
+<!-- ============ START ============ -->
+<section id="home" class="view">
+  <div class="card">
+    <h2 id="greeting">Hallo!</h2>
+    <div id="home-stats" class="stats"></div>
+    <p id="home-hint" class="muted"></p>
+  </div>
+  <div class="card">
+    <button class="big-btn" data-go="learn">🎮 Jetzt lernen</button>
+    <div class="row" style="margin-top:12px">
+      <button class="secondary" data-go="add">➕ Vokabeln hinzufügen</button>
+      <button class="secondary" data-go="manage">📚 Vokabeln verwalten</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ HINZUFÜGEN ============ -->
+<section id="add" class="view">
+  <div class="card">
+    <h2>✍️ Vokabel eingeben</h2>
+    <label for="new-en">Englisch *</label>
+    <input type="text" id="new-en" autocomplete="off" autocapitalize="none" spellcheck="false">
+    <label for="new-de">Deutsch *</label>
+    <input type="text" id="new-de" autocomplete="off">
+    <label for="new-ex">Beispielsatz (optional)</label>
+    <input type="text" id="new-ex" autocomplete="off">
+    <label for="new-note">Anmerkung (optional)</label>
+    <input type="text" id="new-note" autocomplete="off">
+    <div class="row" style="margin-top:16px"><button id="btn-save-word">💾 Speichern</button></div>
+    <div id="add-msg" class="hidden"></div>
+    <h3>Zuletzt in dieser Sitzung gespeichert</h3>
+    <div id="recent" class="muted">–</div>
+  </div>
+
+  <div class="card">
+    <h2>📋 Aus Text einfügen</h2>
+    <p class="muted">Kopiere eine Vokabelliste aus einem PDF, einer Webseite, einer Tabelle oder einer Nachricht und füge sie hier ein. Jede Zeile wird als eine Vokabel erkannt, z. B. „apple – Apfel“, „apple: Apfel“ oder „apple[Tab]Apfel“.</p>
+    <textarea id="paste-text" rows="6" placeholder="apple – Apfel&#10;house – Haus&#10;beautiful – schön" style="width:100%;font:inherit;padding:12px;border:2px solid var(--border);border-radius:12px;min-height:120px"></textarea>
+    <label class="check" style="margin:8px 0"><input type="checkbox" id="paste-book"> Lehrbuch-Modus (Lautschrift entfernen, Blöcke paaren)</label>
+    <div class="row" style="margin-top:12px"><button id="btn-paste">🔎 Erkennen</button><button class="secondary" id="btn-paste-clear">Leeren</button></div>
+    <div id="paste-msg" class="hidden"></div>
+  </div>
+
+  <div class="card">
+    <h2>📷 Vokabeln per Foto</h2>
+    <p class="muted">Wähle ein Foto einer Vokabelliste aus. Auf dem Smartphone öffnet sich die Galerie oder die Kamera. Die Erkennung läuft komplett im Browser; das Foto wird nicht hochgeladen.</p>
+    <input type="file" id="photo" accept="image/*">
+    <div class="row" style="margin-top:12px"><button id="btn-ocr">🔍 Text erkennen</button></div>
+    <div id="ocr-msg" class="hidden"></div>
+    <div id="review" class="hidden"></div>
+  </div>
+</section>
+
+<!-- ============ VERWALTEN ============ -->
+<section id="manage" class="view">
+  <div class="card">
+    <h2>📚 Meine Vokabeln</h2>
+    <input type="search" id="search" placeholder="🔎 Suchen …" autocomplete="off">
+    <p id="count-info" class="muted"></p>
+    <div id="word-list"></div>
+    <div class="row" style="margin-top:12px">
+      <button data-go="add">➕ Neue Vokabel</button>
+      <button class="danger" id="btn-delete-all">Alle Vokabeln löschen</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>💾 Sichern & übertragen</h2>
+    <p class="muted">Die Datei enthält alle Vokabeln und deinen Lernfortschritt. Sichere sie regelmäßig, damit nichts verloren geht. Mit dem Import kannst du sie auf einem anderen Gerät einlesen.</p>
+    <div class="row">
+      <button id="btn-export">⬇️ Sichern (Datei speichern)</button>
+      <label class="file-btn">📂 Datei importieren
+        <input type="file" id="import-file" accept="application/json,.json" hidden>
+      </label>
+    </div>
+    <details class="paste-import"><summary>📋 Oder kopierten Text hier einfügen</summary>
+      <textarea id="import-paste" rows="4" placeholder="Den kopierten Text hier einfügen"></textarea>
+      <button id="btn-import-paste" type="button">Text übernehmen</button>
+    </details>
+    <div id="import-msg" class="hidden"></div>
+    <div id="import-result" class="hidden"></div>
+    <div id="import-box" class="hidden">
+      <p id="import-text"></p>
+      <div id="import-pairs"></div>
+      <div class="row">
+        <button id="btn-import-ok">✅ Importieren</button>
+        <button class="secondary" id="btn-import-cancel">Abbrechen</button>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>🔄 Englisch und Deutsch prüfen</h2>
+    <p class="muted">Findet Einträge, bei denen das deutsche Wort im Englisch-Feld steht. Du entscheidest pro Paar, ob getauscht wird.</p>
+    <div class="row">
+      <button id="btn-check-swaps">🔍 Gespeicherte Vokabeln prüfen</button>
+      <button class="danger" id="btn-swap-all">↔️ Alle Einträge umdrehen</button>
+    </div>
+    <div id="swap-panel" class="hidden"></div>
+  </div>
+</section>
+
+<!-- ============ LERNEN ============ -->
+<section id="learn" class="view">
+  <div id="learn-setup" class="card">
+    <h2>🎮 Üben</h2>
+    <h3>Übungsart</h3>
+    <div class="choices" id="mode-choices">
+      <label class="choice"><span><input type="radio" name="mode" value="write" checked> ✍️ Schreiben</span><small>Deutsch → Englisch eintippen</small></label>
+      <label class="choice"><span><input type="radio" name="mode" value="choice"> 🔘 Auswählen</span><small>Englisches Wort, vier Antworten zur Auswahl</small></label>
+      <label class="choice"><span><input type="radio" name="mode" value="mix"> 🔀 Mix</span><small>Beide Richtungen, zufällig gemischt</small></label>
+      <label class="choice"><span><input type="radio" name="mode" value="test"> 📝 Vokabeltest</span><small>Keine Auflösung während des Tests, am Ende Note und Lösungen</small></label>
+    </div>
+    <h3>Welche Vokabeln?</h3>
+    <div class="choices" id="scope-choices">
+      <label class="choice"><span><input type="radio" name="scope" value="all" checked> Alle Vokabeln</span></label>
+      <label class="choice"><span><input type="radio" name="scope" value="wrong"> Nur falsch beantwortete <span id="wrong-count" class="muted"></span></span></label>
+      <label class="choice"><span><input type="radio" name="scope" value="pick"> Eine Auswahl</span></label>
+    </div>
+    <div id="pick-box" class="hidden">
+      <div class="row" style="margin-top:8px">
+        <button class="secondary" id="pick-all">Alle markieren</button>
+        <button class="secondary" id="pick-none">Keine markieren</button>
+      </div>
+      <div id="pick-list" class="pick-list"></div>
+    </div>
+    <div id="count-box">
+      <h3>Wie viele Wörter?</h3>
+      <select id="count-select" style="font:inherit;width:100%;padding:12px;border:2px solid var(--border);border-radius:12px;background:#fff;min-height:48px">
+        <option value="5">5 Wörter</option>
+        <option value="10" selected>10 Wörter</option>
+        <option value="15">15 Wörter</option>
+        <option value="20">20 Wörter</option>
+        <option value="all">Alle Wörter</option>
+      </select>
+    </div>
+    <p id="grade-info" class="hidden muted" style="margin-top:12px">Notenschlüssel: 1 ab 92 %, 2 ab 81 %, 3 ab 67 %, 4 ab 50 %, 5 ab 30 %, 6 darunter. Fast richtige Antworten zählen halb.</p>
+    <div class="row" style="margin-top:18px"><button class="big-btn" id="btn-start">▶️ Runde starten</button></div>
+    <div id="setup-msg" class="hidden"></div>
+  </div>
+
+  <div id="learn-play" class="card hidden">
+    <div class="row" style="justify-content:space-between">
+      <span id="play-count" class="muted"></span>
+      <span id="play-points" class="pill"></span>
+    </div>
+    <div class="progress"><div id="play-bar" style="width:0%"></div></div>
+    <div id="play-body"></div>
+    <div id="feedback" class="hidden"></div>
+    <div class="row" style="margin-top:14px">
+      <button id="btn-next" class="hidden">Weiter ▶️</button>
+      <button class="ghost" id="btn-quit">Runde abbrechen</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FORTSCHRITT ============ -->
+<section id="progress" class="view">
+  <div class="card">
+    <h2>🏆 Dein Fortschritt</h2>
+    <div id="prog-stats" class="stats"></div>
+    <h3>Abzeichen</h3>
+    <div id="badges"></div>
+  </div>
+  <div class="card">
+    <h3>Letzte Runden</h3>
+    <div id="prog-rounds"></div>
+    <div class="row" style="margin-top:14px">
+      <button class="secondary" id="btn-practice-wrong">🔁 Falsche Vokabeln üben</button>
+      <button class="danger" id="btn-reset-progress">Fortschritt zurücksetzen</button>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="powered">powered by Tameo</footer>
+
+<div id="ask" class="ask hidden" role="dialog" aria-modal="true"><div class="ask-box"><p id="ask-text"></p><div class="ask-btns"><button id="ask-no" class="ghost" type="button">Abbrechen</button><button id="ask-yes" type="button">Ja, weiter</button></div></div></div>
+<div id="export-box" class="ask hidden" role="dialog" aria-modal="true"><div class="ask-box"><h2>💾 Deine Vokabeln</h2><p>Kopiere den Text unten (Knopf „Text kopieren“) und füge ihn z.&nbsp;B. in eine Notiz oder Nachricht ein. Auf dem anderen Gerät fügst du ihn unter „Sichern &amp; übertragen“ wieder ein. Falls dein Browser eine Datei speichern kann, wird zusätzlich eine .json-Datei geladen.</p><textarea id="export-text" rows="8" readonly></textarea><div class="ask-btns"><button id="export-copy" type="button">📋 Text kopieren</button><button id="export-close" class="ghost" type="button">Schließen</button></div></div></div>
+<div id="toast" class="toast"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ---------- Konstanten ---------- */
+  const STORE_KEY = 'vokabeltrainer.v1';
+  const APP_VERSION = '1.6';
+  const OCR_BASE_URL = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/';
+  const TESSERACT_URL = OCR_BASE_URL + 'tesseract.min.js';
+  const POINTS_PER_CORRECT = 10;
+  const PARTIAL_POINTS = 5;   // Teilpunkte bei einem kleinen Fehler in Mehrwort-Antworten
+  const ROUND_SIZE = 10;
+  const MODE_NAMES = { write: 'Schreiben', choice: 'Auswählen', mix: 'Mix' };
+  const BADGES = [
+    { id: 'first',    name: 'Erste Runde',     icon: '🥇', test: p => p.rounds.length >= 1 },
+    { id: 'five',     name: '5 Runden',        icon: '🔥', test: p => p.rounds.length >= 5 },
+    { id: 'ten',      name: '10 Runden',       icon: '🚀', test: p => p.rounds.length >= 10 },
+    { id: 'perfect',  name: 'Perfekte Runde',  icon: '💯', test: p => p.rounds.some(r => r.total > 0 && r.correct === r.total) },
+    { id: 'pts100',   name: '100 Punkte',      icon: '⭐', test: p => p.points >= 100 },
+    { id: 'pts500',   name: '500 Punkte',      icon: '🌟', test: p => p.points >= 500 }
+  ];
+
+  /* ---------- Hilfsfunktionen ---------- */
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  const norm = s => String(s || '').trim().toLowerCase().replace(/\s+/g, ' ');
+  const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+  const shuffle = arr => {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  };
+  const radio = name => document.querySelector('input[name="' + name + '"]:checked').value;
+
+  function setMsg(el, text, type) {
+    if (!text) { el.className = 'hidden'; el.textContent = ''; return; }
+    el.className = 'msg ' + (type || 'info');
+    el.textContent = text;
+  }
+
+  let toastTimer = null;
+  function toast(text, type) {
+    const t = $('toast');
+    t.textContent = text;
+    t.className = 'toast show ' + (type || '');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { t.className = 'toast'; }, 3000);
+  }
+
+  /* ---------- Speicher ---------- */
+  let loadWarning = '';
+
+  function defaultProgress() {
+    return { questions: 0, correct: 0, wrong: 0, points: 0, rounds: [], wrongIds: [] };
+  }
+
+  function loadState() {
+    try {
+      const raw = localStorage.getItem(STORE_KEY);
+      if (!raw) return { words: [], progress: defaultProgress() };
+      const s = JSON.parse(raw);
+      return {
+        words: Array.isArray(s.words) ? s.words : [],
+        progress: Object.assign(defaultProgress(), s.progress || {})
+      };
+    } catch (e) {
+      // Daten sind beschädigt: Kopie sichern, damit nichts still verloren geht
+      try {
+        const raw = localStorage.getItem(STORE_KEY);
+        if (raw) localStorage.setItem(STORE_KEY + '.defekt-' + Date.now(), raw);
+      } catch (_) {}
+      loadWarning = 'Die gespeicherten Daten konnten nicht gelesen werden. Eine Kopie wurde gesichert.';
+      return { words: [], progress: defaultProgress() };
+    }
+  }
+
+  let state = loadState();
+
+  function saveState() {
+    try {
+      localStorage.setItem(STORE_KEY, JSON.stringify(state));
+      return true;
+    } catch (e) {
+      toast('Speichern nicht möglich. Bitte sichere deine Vokabeln als Datei (Verwalten → Sichern).', 'bad');
+      return false;
+    }
+  }
+
+  function makeWord(o) {
+    return {
+      id: o.id && typeof o.id === 'string' && !state.words.some(w => w.id === o.id) ? o.id : newId(),
+      en: String(o.en || '').trim(),
+      de: String(o.de || '').trim(),
+      example: String(o.example || '').trim(),
+      note: String(o.note || '').trim(),
+      created: typeof o.created === 'string' ? o.created : new Date().toISOString()
+    };
+  }
+
+  function findDup(en) {
+    return state.words.find(w => norm(w.en) === norm(en));
+  }
+
+  /* ---------- Routing / Navigation ---------- */
+  const VIEWS = ['home', 'add', 'manage', 'learn', 'progress'];
+  let round = null;          // laufende Übungsrunde
+  let pendingScope = null;   // z. B. "Falsche üben" aus dem Fortschritt
+  let editingId = null;      // Vokabel, die gerade bearbeitet wird
+  let ocrRows = [];          // erkannte Zeilen vor dem Speichern
+  let pendingImport = null;  // geprüfte Importdatei
+  let recentSaved = [];      // Sitzungsliste im Bereich Hinzufügen
+
+  function go(view) {
+    if (location.hash === '#' + view) showView(view);
+    else location.hash = view;
+  }
+
+  function showView(v) {
+    if (!VIEWS.includes(v)) v = 'home';
+    if (v !== 'learn') round = null;
+    VIEWS.forEach(name => $(name).classList.toggle('active', name === v));
+    document.querySelectorAll('nav button').forEach(b => b.classList.toggle('active', b.dataset.go === v));
+    if (v === 'home') renderHome();
+    if (v === 'manage') renderManage();
+    if (v === 'progress') renderProgress();
+    if (v === 'learn') {
+      if (round) { $('learn-setup').classList.add('hidden'); $('learn-play').classList.remove('hidden'); }
+      else showLearnSetup();
+    }
+    if (v === 'add') renderRecent();
+    window.scrollTo(0, 0);
+  }
+
+  document.addEventListener('click', e => {
+    const b = e.target.closest('[data-go]');
+    if (b) go(b.dataset.go);
+  });
+
+  window.addEventListener('hashchange', () => showView(location.hash.slice(1)));
+
+  /* ---------- Start ---------- */
+  function renderHome() {
+    const p = state.progress;
+    const pct = p.questions ? Math.round(p.correct / p.questions * 100) : 0;
+    $('home-stats').innerHTML =
+      '<div class="stat"><b>' + state.words.length + '</b>Vokabeln</div>' +
+      '<div class="stat"><b>' + p.points + '</b>Punkte</div>' +
+      '<div class="stat"><b>' + pct + ' %</b>richtig</div>' +
+      '<div class="stat"><b>' + p.rounds.length + '</b>Runden</div>';
+    $('greeting').textContent = 'Hallo! 👋 Was möchtest du heute üben?';
+    $('home-hint').textContent = state.words.length
+      ? ''
+      : 'Tipp: Füge zuerst Vokabeln hinzu – per Hand oder per Foto.';
+    if (loadWarning) toast(loadWarning, 'bad');
+    loadWarning = '';
+  }
+
+  /* ---------- Vokabel hinzufügen ---------- */
+  function renderRecent() {
+    $('recent').innerHTML = recentSaved.length
+      ? recentSaved.map(t => '<div>✅ ' + esc(t) + '</div>').join('')
+      : '–';
+  }
+
+  ['new-en', 'new-de', 'new-ex', 'new-note'].forEach(id => {
+    $(id).addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); $('btn-save-word').click(); }
+    });
+  });
+
+  $('btn-save-word').addEventListener('click', async () => {
+    const en = $('new-en').value.trim();
+    const de = $('new-de').value.trim();
+    const msg = $('add-msg');
+    if (!en || !de) {
+      setMsg(msg, 'Bitte fülle das englische und das deutsche Feld aus, bevor du speicherst.', 'bad');
+      (en ? $('new-de') : $('new-en')).focus();
+      return;
+    }
+    const dup = findDup(en);
+    if (dup && !await askConfirm('„' + dup.en + '“ gibt es schon (' + dup.de + '). Trotzdem speichern?')) return;
+
+    state.words.push(makeWord({
+      en, de,
+      example: $('new-ex').value,
+      note: $('new-note').value
+    }));
+    if (!saveState()) return;
+
+    recentSaved.unshift(en + ' = ' + de);
+    recentSaved = recentSaved.slice(0, 8);
+    ['new-en', 'new-de', 'new-ex', 'new-note'].forEach(id => { $(id).value = ''; });
+    setMsg(msg, '✅ Gespeichert: ' + en + ' = ' + de + '. Gib direkt die nächste Vokabel ein.', 'ok');
+    renderRecent();
+    $('new-en').focus();
+  });
+
+  /* ---------- Fotoimport (OCR) ---------- */
+  let tesseractPromise = null;
+
+  function loadTesseract() {
+    if (window.Tesseract) return Promise.resolve(window.Tesseract);
+    if (!tesseractPromise) {
+      tesseractPromise = new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = TESSERACT_URL;
+        s.onload = () => resolve(window.Tesseract);
+        s.onerror = () => {
+          tesseractPromise = null;
+          reject(new Error('Die Texterkennung konnte nicht geladen werden. Bitte prüfe deine Internetverbindung und versuche es erneut.'));
+        };
+        document.head.appendChild(s);
+      });
+    }
+    return tesseractPromise;
+  }
+
+  // Startet den Texterkennungs-Worker. Schlägt der Start fehl (z. B. in eingebetteten Vorschauen
+  // oder bei file://-Seiten), wird ohne Blob-URL erneut versucht.
+  // Startet den Texterkennungs-Worker in mehreren Schritten:
+  // 1. Standardstart, 2. ohne Blob-URL, 3. Worker-Code selbst laden und als eigene Blob-URL starten.
+  async function createOcrWorker(T, logger) {
+    const errors = [];
+    try {
+      return await T.createWorker(['eng', 'deu'], 1, { logger });
+    } catch (e) {
+      errors.push(e);
+    }
+    try {
+      return await T.createWorker(['eng', 'deu'], 1, { logger, workerBlobURL: false });
+    } catch (e) {
+      errors.push(e);
+    }
+    try {
+      const code = await (await fetch(OCR_BASE_URL + 'worker.min.js')).text();
+      const workerUrl = URL.createObjectURL(new Blob([code], { type: 'text/javascript' }));
+      return await T.createWorker(['eng', 'deu'], 1, { logger, workerPath: workerUrl, workerBlobURL: false });
+    } catch (e) {
+      errors.push(e);
+    }
+    console.error('OCR-Worker konnte nicht gestartet werden:', errors);
+    throw new Error('Die Texterkennung kann in dieser Umgebung nicht starten. Öffne die Datei direkt im Browser (Doppelklick auf die HTML-Datei) oder nutze „Aus Text einfügen“.');
+  }
+
+  async function runOcr(file, statusEl) {
+    setMsg(statusEl, 'Texterkennung wird vorbereitet … (beim ersten Mal kann das etwas dauern)', 'info');
+    const T = await loadTesseract();
+    const logger = m => {
+      if (m.status === 'recognizing text') {
+        setMsg(statusEl, 'Text wird erkannt … ' + Math.round((m.progress || 0) * 100) + ' %', 'info');
+      }
+    };
+    const worker = await createOcrWorker(T, logger);
+    try {
+      const { data } = await worker.recognize(file);
+      return data.text || '';
+    } finally {
+      await worker.terminate();
+    }
+  }
+
+  // Kleine Wortlisten, um Englisch von Deutsch zu unterscheiden
+  const EN_WORDS = new Set('the a an is are am to of and my with in on it i you he she we they this that be have has not for at from was were do does will can'.split(' '));
+  const DE_WORDS = new Set('der die das und ist ein eine einen zu mit ich du er sie wir nicht von im auf für den dem des an bei war sind haben hat es'.split(' '));
+
+  function langScore(s) {
+    const words = s.toLowerCase().split(/[^a-zäöüß]+/).filter(Boolean);
+    let en = 0, de = 0;
+    words.forEach(w => {
+      if (EN_WORDS.has(w)) en++;
+      if (DE_WORDS.has(w)) de++;
+    });
+    if (/[äöüß]/i.test(s)) de++;
+    return en - de; // größer = eher Englisch
+  }
+
+  function assignLanguages(a, b) {
+    return langScore(b) > langScore(a) ? { en: b, de: a } : { en: a, de: b };
+  }
+
+  function parseOcrText(text) {
+    const rows = [];
+    text.split(/\r?\n/).forEach(raw => {
+      let line = raw.trim().replace(/^\d+[.)]\s*/, '');
+      if (!/[A-Za-zÄÖÜäöüß]/.test(line)) return;
+      let parts = line
+        .split(/\t|\s*[|;]\s*|\s+[–—=:-]\s+|\s*:\s*|\s{2,}/)
+        .map(s => s.trim())
+        .filter(Boolean);
+      if (parts.length === 1) {
+        const words = line.split(' ');
+        if (words.length === 2) parts = words;   // "apple Apfel"
+      }
+      if (parts.length >= 2) {
+        const [a, ...rest] = parts;
+        const { en, de } = assignLanguages(a, rest.join(' '));
+        rows.push({ en, de, keep: true });
+      } else {
+        rows.push({ en: line, de: '', keep: true }); // Zeile unklar: Nutzer ergänzt
+      }
+    });
+    return rows;
+  }
+
+  $('btn-ocr').addEventListener('click', async () => {
+    const file = $('photo').files[0];
+    const msg = $('ocr-msg');
+    if (!file) { setMsg(msg, 'Bitte wähle zuerst ein Foto aus.', 'bad'); return; }
+    $('btn-ocr').disabled = true;
+    try {
+      const text = await runOcr(file, msg);
+      const rows = parseOcrText(text);
+      if (!rows.length) {
+        ocrRows = [];
+        renderReview();
+        setMsg(msg, 'Ich konnte keine brauchbaren Vokabeln erkennen. Tipp: Foto gerade halten, gut beleuchtet, Schrift groß genug. Du kannst Vokabeln auch oben von Hand eingeben.', 'bad');
+        return;
+      }
+      ocrRows = rows;
+      setMsg(msg, rows.length + ' Zeilen erkannt. Bitte prüfe sie unten, bevor du sie speicherst. Die Erkennung ist nicht immer fehlerfrei.', 'ok');
+      renderReview();
+    } catch (err) {
+      setMsg(msg, err.message || 'Die Texterkennung ist fehlgeschlagen.', 'bad');
+    } finally {
+      $('btn-ocr').disabled = false;
+    }
+  });
+
+  /* ---------- Lehrbuch-Modus ---------- */
+  function cleanBookLine(s) {
+    return s
+      .replace(/\[[^\]]*\]?/g, ' ')                                 // Lautschrift [nju:]
+      .replace(/\((?:informal|no pl|only pl|BE|AE|pl|sg)\)/gi, ' ')  // Grammatikhinweise
+      .replace(/\(=[^)]*\)/g, ' ')                                    // "(= she is)"
+      .replace(/[\[\]]/g, ' ')
+      .replace(/^[•*\-–]+\s*/, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  function parseBookText(text) {
+    // Hinter jeder Lautschrift-Klammer beginnt meist ein neuer Eintrag
+    const lines = String(text)
+      .replace(/\]\s+/g, ']\n')
+      .split(/\r?\n/)
+      .map(l => l.trim())
+      .filter(Boolean);
+
+    const rows = [];
+    const items = [];
+    let prevKind = null;
+
+    lines.forEach(raw => {
+      const hadPhonetic = /\[/.test(raw);
+      const s = cleanBookLine(raw);
+      if (!/[A-Za-zÄÖÜäöüß]/.test(s)) return;          // Zahlen, Striche, Fragmente ohne Buchstaben
+      if (/^p\.?\s*\d+$/i.test(s)) return;             // Seitenangaben wie "p. 20"
+
+      // Zeile mit Trennzeichen: direkt als Paar übernehmen
+      const parts = s.split(/\t|\s+[–—=:-]\s+|\s*:\s+/).map(p => p.trim()).filter(Boolean);
+      if (parts.length === 2) {
+        const { en, de } = assignLanguages(parts[0], parts[1]);
+        rows.push({ en, de, keep: true });
+        prevKind = null;
+        return;
+      }
+
+      // Zeile einordnen: englisch, deutsch oder unklar (unklar folgt der Zeile davor)
+      const c = signalCounts(s);
+      let kind;
+      if (c.en > c.de) kind = 'en';
+      else if (c.de > c.en) kind = 'de';
+      else if (hadPhonetic) kind = 'en';
+      else if (/[äöüß]/i.test(s) || /^(der|die|das|ein|eine|sich|zu)\b/i.test(s)) kind = 'de';
+      else kind = prevKind || 'en';
+      prevKind = kind;
+      items.push({ kind, text: s });
+    });
+
+    // Gleichartige Zeilen zu Blöcken zusammenfassen
+    const runs = [];
+    items.forEach(it => {
+      const last = runs[runs.length - 1];
+      if (last && last.kind === it.kind) last.lines.push(it.text);
+      else runs.push({ kind: it.kind, lines: [it.text] });
+    });
+
+    // Englischer Block direkt gefolgt von einem deutschen Block gleicher Länge: Zeile für Zeile paaren.
+    // Sonst bleiben die Zeilen einzeln und werden zum Ergänzen markiert.
+    for (let i = 0; i < runs.length; i++) {
+      const r = runs[i];
+      const next = runs[i + 1];
+      if (r.kind === 'en' && next && next.kind === 'de' && r.lines.length === next.lines.length) {
+        r.lines.forEach((en, k) => rows.push({ en, de: next.lines[k], keep: true }));
+        i++;
+      } else {
+        r.lines.forEach(t => rows.push(r.kind === 'en'
+          ? { en: t, de: '', keep: true }
+          : { en: '', de: t, keep: true }));
+      }
+    }
+    return rows;
+  }
+
+  $('btn-paste').addEventListener('click', () => {
+    const msg = $('paste-msg');
+    const book = $('paste-book').checked;
+    const rows = book ? parseBookText($('paste-text').value) : parseOcrText($('paste-text').value);
+    if (!rows.length) { setMsg(msg, 'Bitte füge zuerst eine Vokabelliste ein.', 'bad'); return; }
+    ocrRows = rows;
+    setMsg(msg, rows.length + ' Zeilen erkannt' + (book ? ', davon ' + rows.filter(r => !r.en || !r.de).length + ' ohne Partner (bitte ergänzen oder abwählen)' : '') + '. Bitte prüfe sie unten, bevor du speicherst.', 'ok');
+    renderReview();
+    $('review').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+
+  $('btn-paste-clear').addEventListener('click', () => {
+    $('paste-text').value = '';
+    setMsg($('paste-msg'), '', '');
+  });
+
+  function renderReview() {
+    const box = $('review');
+    if (!ocrRows.length) { box.className = 'hidden'; box.innerHTML = ''; return; }
+    box.className = '';
+    box.innerHTML =
+      '<h3>Erkannte Vokabeln prüfen</h3>' +
+      '<p class="muted">Nur angehakte Zeilen werden gespeichert. Korrigiere Wörter direkt im Feld.</p>' +
+      ocrRows.map((r, i) =>
+        '<div class="review-row ' + (r.keep ? '' : 'skip') + '" data-i="' + i + '">' +
+          '<label class="check"><input type="checkbox" data-act="keep" data-i="' + i + '" ' + (r.keep ? 'checked' : '') + '> übernehmen</label>' +
+          '<input type="text" data-field="en" data-i="' + i + '" value="' + esc(r.en) + '" placeholder="Englisch" autocapitalize="none">' +
+          '<input type="text" data-field="de" data-i="' + i + '" value="' + esc(r.de) + '" placeholder="Deutsch (fehlt?)">' +
+          '<div class="row">' +
+            '<button class="secondary" data-act="swap" data-i="' + i + '">⇄ Tauschen</button>' +
+            '<button class="danger" data-act="del" data-i="' + i + '">🗑️ Löschen</button>' +
+          '</div>' +
+        '</div>'
+      ).join('') +
+      '<div class="row" style="margin-top:12px">' +
+        '<button class="secondary" data-act="addrow">+ Zeile hinzufügen</button>' +
+      '</div>' +
+      '<div class="row" style="margin-top:12px">' +
+        '<button data-act="confirm">✅ Ausgewählte speichern</button>' +
+        '<button class="secondary" data-act="discard">Alle verwerfen</button>' +
+      '</div>' +
+      '<div id="review-msg" class="hidden"></div>';
+  }
+
+  $('review').addEventListener('input', e => {
+    const f = e.target.dataset.field;
+    if (f) ocrRows[+e.target.dataset.i][f] = e.target.value;
+  });
+
+  $('review').addEventListener('change', e => {
+    if (e.target.dataset.act === 'keep') {
+      ocrRows[+e.target.dataset.i].keep = e.target.checked;
+      e.target.closest('.review-row').classList.toggle('skip', !e.target.checked);
+    }
+  });
+
+  $('review').addEventListener('click', async e => {
+    const b = e.target.closest('button[data-act]');
+    if (!b) return;
+    const act = b.dataset.act;
+    const i = +b.dataset.i;
+    if (act === 'swap') { [ocrRows[i].en, ocrRows[i].de] = [ocrRows[i].de, ocrRows[i].en]; renderReview(); }
+    else if (act === 'del') { ocrRows.splice(i, 1); renderReview(); }
+    else if (act === 'addrow') { ocrRows.push({ en: '', de: '', keep: true }); renderReview(); }
+    else if (act === 'discard') {
+      if (await askConfirm('Alle erkannten Vokabeln verwerfen?')) { ocrRows = []; renderReview(); setMsg($('ocr-msg'), 'Erkannte Vokabeln wurden verworfen.', 'info'); }
+    }
+    else if (act === 'confirm') confirmOcrRows();
+  });
+
+  function confirmOcrRows() {
+    const msg = $('review-msg');
+    const chosen = ocrRows.filter(r => r.keep);
+    if (!chosen.length) { setMsg(msg, 'Keine Zeile ausgewählt. Hake mindestens eine Vokabel an.', 'bad'); return; }
+    const incomplete = chosen.filter(r => !r.en.trim() || !r.de.trim());
+    if (incomplete.length) {
+      setMsg(msg, 'Bitte ergänze bei ' + incomplete.length + ' markierter Zeile(n) das fehlende Wort oder entferne den Haken.', 'bad');
+      return;
+    }
+    let added = 0, skipped = 0;
+    chosen.forEach(r => {
+      if (findDup(r.en)) { skipped++; return; }
+      state.words.push(makeWord({ en: r.en, de: r.de }));
+      added++;
+    });
+    if (!saveState()) return;
+    ocrRows = [];
+    renderReview();
+    setMsg($('ocr-msg'), added + ' Vokabel(n) gespeichert' + (skipped ? ', ' + skipped + ' doppelte übersprungen' : '') + '. 🎉', 'ok');
+    toast(added + ' Vokabel(n) gespeichert ✔️');
+  }
+
+  /* ---------- Vertauschte Einträge erkennen ---------- */
+  // Nur eindeutige Signalwörter. Mehrdeutige Wörter wie "an", "in", "die", "was" oder "will" fehlen bewusst.
+  const DE_SIGNALS = new Set('ich du sie und nicht kein keine bitte danke ist sind wir ihr mein dein auch wie das der den dem des eine einen zu mit für von habe haben hast bin bist heute morgen nein ja wo warum wann gern gerne guten sehr'.split(' '));
+  const EN_SIGNALS = new Set('the a an is are am to of and my with i you he she we they it this that be have has do does dont can please thank thanks hello your our their what where how who not from at for'.split(' '));
+
+  function signalCounts(s) {
+    const words = String(s).toLowerCase().replace(/['’`]/g, '').split(/[^a-zäöüß]+/).filter(Boolean);
+    let de = 0, en = 0;
+    words.forEach(w => {
+      if (DE_SIGNALS.has(w)) de++;
+      if (EN_SIGNALS.has(w)) en++;
+    });
+    return { de, en };
+  }
+
+  // Vorschlag nur, wenn "en" eindeutig deutsch und "de" eindeutig englisch wirkt. Bei Unsicherheit: nein.
+  function isSwapped(en, de) {
+    const a = signalCounts(en);
+    const b = signalCounts(de);
+    const enLooksGerman = a.de >= 1 && a.de > a.en;
+    const deLooksEnglish = b.en >= 1 && b.en > b.de;
+    return enLooksGerman && deLooksEnglish;
+  }
+
+  /* ---------- Verwalten ---------- */
+  function renderManage() {
+    const q = $('search').value.trim().toLowerCase();
+    const counts = {};
+    state.words.forEach(w => { const k = norm(w.en); counts[k] = (counts[k] || 0) + 1; });
+    const items = state.words
+      .filter(w => !q || (w.en + ' ' + w.de + ' ' + w.example + ' ' + w.note).toLowerCase().includes(q))
+      .sort((a, b) => a.en.localeCompare(b.en, 'en', { sensitivity: 'base' }));
+
+    $('count-info').textContent = items.length + ' von ' + state.words.length + ' Vokabeln';
+    if (!state.words.length) {
+      $('word-list').innerHTML = '<p class="muted">Noch keine Vokabeln gespeichert.</p>';
+      return;
+    }
+    $('word-list').innerHTML = items.length
+      ? items.map(w => w.id === editingId ? editHtml(w) : rowHtml(w, counts[norm(w.en)] > 1)).join('')
+      : '<p class="muted">Keine Treffer.</p>';
+  }
+
+  function rowHtml(w, dup) {
+    return '<div class="list-item">' +
+      '<div><b>' + esc(w.en) + '</b> – ' + esc(w.de) + ' ' + (dup ? '<span class="pill warn">doppelt?</span>' : '') +
+        (w.example ? '<div class="muted">„' + esc(w.example) + '“</div>' : '') +
+        (w.note ? '<div class="muted">Hinweis: ' + esc(w.note) + '</div>' : '') +
+      '</div>' +
+      '<div class="row">' +
+        '<button class="secondary" data-act="edit" data-id="' + w.id + '">✏️ Bearbeiten</button>' +
+        '<button class="danger" data-act="del" data-id="' + w.id + '">🗑️ Löschen</button>' +
+      '</div></div>';
+  }
+
+  function editHtml(w) {
+    return '<div class="list-item" style="display:block">' +
+      '<label>Englisch</label><input type="text" id="e-en" value="' + esc(w.en) + '" autocapitalize="none">' +
+      '<label>Deutsch</label><input type="text" id="e-de" value="' + esc(w.de) + '">' +
+      '<label>Beispielsatz</label><input type="text" id="e-ex" value="' + esc(w.example) + '">' +
+      '<label>Anmerkung</label><input type="text" id="e-note" value="' + esc(w.note) + '">' +
+      '<div class="row" style="margin-top:12px">' +
+        '<button data-act="save" data-id="' + w.id + '">💾 Speichern</button>' +
+        '<button class="ghost" data-act="cancel">Abbrechen</button>' +
+      '</div></div>';
+  }
+
+  $('search').addEventListener('input', renderManage);
+
+  $('word-list').addEventListener('click', async e => {
+    const b = e.target.closest('button[data-act]');
+    if (!b) return;
+    const id = b.dataset.id;
+    const act = b.dataset.act;
+    if (act === 'edit') { editingId = id; renderManage(); const f = $('e-en'); if (f) f.focus(); }
+    else if (act === 'cancel') { editingId = null; renderManage(); }
+    else if (act === 'save') saveEdit(id);
+    else if (act === 'del') {
+      const w = state.words.find(x => x.id === id);
+      if (w && await askConfirm('„' + w.en + '“ wirklich löschen?')) deleteWord(id);
+    }
+  });
+
+  async function saveEdit(id) {
+    const en = $('e-en').value.trim();
+    const de = $('e-de').value.trim();
+    if (!en || !de) { toast('Englisch und Deutsch dürfen nicht leer sein.', 'bad'); return; }
+    const dup = state.words.find(w => w.id !== id && norm(w.en) === norm(en));
+    if (dup && !await askConfirm('„' + dup.en + '“ gibt es schon. Trotzdem speichern?')) return;
+    const w = state.words.find(x => x.id === id);
+    if (!w) return;
+    Object.assign(w, { en, de, example: $('e-ex').value.trim(), note: $('e-note').value.trim() });
+    editingId = null;
+    saveState();
+    renderManage();
+    toast('Gespeichert ✔️');
+  }
+
+  function deleteWord(id) {
+    state.words = state.words.filter(w => w.id !== id);
+    state.progress.wrongIds = state.progress.wrongIds.filter(x => x !== id);
+    saveState();
+    renderManage();
+    toast('Vokabel gelöscht');
+  }
+
+  $('btn-delete-all').addEventListener('click', async () => {
+    if (!state.words.length) { toast('Es gibt nichts zu löschen.'); return; }
+    if (!await askConfirm('Achtung: Alle ' + state.words.length + ' Vokabeln werden gelöscht. Tipp: Erst über „Sichern“ eine Datei speichern. Wirklich alles löschen?')) return;
+    state.words = [];
+    state.progress.wrongIds = [];
+    saveState();
+    renderManage();
+    toast('Alle Vokabeln gelöscht');
+  });
+
+  /* ---------- Import-Vorschau mit Paaren ---------- */
+  function renderImportPreview() {
+    const imp = pendingImport;
+    if (!imp) return;
+    const known = new Set(state.words.map(w => norm(w.en)));
+    const seen = new Set();
+    let fresh = 0, dup = 0;
+    imp.words.forEach(w => {
+      const swapIt = w.swap && w.selected !== false;
+      const k = norm(swapIt ? w.de : w.en);
+      if (known.has(k) || seen.has(k)) dup++;
+      else { seen.add(k); fresh++; }
+    });
+    const swapRows = imp.words.map((w, i) => ({ w, i })).filter(x => x.w.swap);
+    const adopt = imp.progress && state.progress.questions === 0 && (imp.progress.questions || 0) > 0;
+
+    $('import-text').innerHTML =
+      'Gefunden: <b>' + imp.total + '</b> Einträge. Neu: <b>' + fresh + '</b>. ' +
+      'Übersprungen (bereits vorhanden oder doppelt): <b>' + dup + '</b>. Ungültig: <b>' + imp.invalid + '</b>.<br>' +
+      'Deine bestehenden Vokabeln bleiben erhalten. ' +
+      (adopt ? 'Der Lernfortschritt aus der Datei wird übernommen, da du noch keinen hast.' : 'Dein vorhandener Lernfortschritt bleibt unverändert.');
+
+    $('import-pairs').innerHTML = swapRows.length
+      ? '<details open><summary>' + swapRows.length + ' Paar(e) mit vertauschtem Englisch und Deutsch erkannt</summary>' +
+        '<p class="muted">Angehakt heißt: wird getauscht. Du kannst jedes Paar einzeln abwählen.</p>' +
+        swapRows.map(x =>
+          '<label class="pair"><input type="checkbox" data-swap="' + x.i + '"' + (x.w.selected === false ? '' : ' checked') + '>' +
+          '<span>Vorher: „' + esc(x.w.en) + '“ / „' + esc(x.w.de) + '“<br>Nachher: „' + esc(x.w.de) + '“ / „' + esc(x.w.en) + '“</span></label>'
+        ).join('') +
+        '</details>'
+      : '<p class="muted">Keine vertauschten Paare erkannt.</p>';
+
+    $('btn-import-ok').className = fresh === 0 ? 'hidden' : '';
+    $('import-box').className = '';
+  }
+
+  $('import-box').addEventListener('change', e => {
+    const i = e.target.dataset.swap;
+    if (i === undefined || !pendingImport) return;
+    pendingImport.words[+i].selected = e.target.checked;
+    renderImportPreview();
+  });
+
+  /* ---------- Gespeicherte Vokabeln prüfen und umdrehen ---------- */
+  $('btn-check-swaps').addEventListener('click', () => {
+    const list = state.words.filter(w => isSwapped(w.en, w.de));
+    const panel = $('swap-panel');
+    if (!list.length) {
+      panel.className = 'msg ok';
+      panel.textContent = 'Keine vertauschten Einträge gefunden. ✅';
+      return;
+    }
+    panel.className = '';
+    panel.innerHTML =
+      '<p class="muted">Angehakt heißt: wird getauscht. Du kannst jedes Paar einzeln abwählen.</p>' +
+      list.map(w =>
+        '<label class="pair"><input type="checkbox" value="' + w.id + '" checked>' +
+        '<span>Vorher: „' + esc(w.en) + '“ / „' + esc(w.de) + '“<br>Nachher: „' + esc(w.de) + '“ / „' + esc(w.en) + '“</span></label>'
+      ).join('') +
+      '<div class="row" style="margin-top:12px">' +
+        '<button id="btn-swap-selected">↔️ Ausgewählte tauschen</button>' +
+        '<button class="ghost" id="btn-swap-close">Schließen</button>' +
+      '</div>';
+  });
+
+  $('swap-panel').addEventListener('click', e => {
+    if (e.target.id === 'btn-swap-close') { $('swap-panel').className = 'hidden'; return; }
+    if (e.target.id !== 'btn-swap-selected') return;
+    const ids = [...document.querySelectorAll('#swap-panel input:checked')].map(i => i.value);
+    let n = 0;
+    state.words.forEach(w => {
+      if (ids.includes(w.id)) { [w.en, w.de] = [w.de, w.en]; n++; }
+    });
+    saveState();
+    $('swap-panel').className = 'hidden';
+    renderManage();
+    toast(n + ' Eintrag/Einträge getauscht ✔️');
+  });
+
+  $('btn-swap-all').addEventListener('click', async () => {
+    if (!state.words.length) { toast('Es gibt nichts umzudrehen.'); return; }
+    if (!await askConfirm('Alle ' + state.words.length + ' Einträge werden umgedreht: Englisch wird Deutsch und umgekehrt. Wirklich?')) return;
+    state.words.forEach(w => { [w.en, w.de] = [w.de, w.en]; });
+    saveState();
+    renderManage();
+    toast('Alle Einträge umgedreht ✔️');
+  });
+
+  /* ---------- Eigene Bestätigung (ohne Browser-Dialog) ---------- */
+  function askConfirm(text) {
+    return new Promise(resolve => {
+      const box = $('ask');
+      $('ask-text').textContent = text;
+      box.className = 'ask';
+      const done = v => {
+        box.className = 'ask hidden';
+        $('ask-yes').onclick = null;
+        $('ask-no').onclick = null;
+        resolve(v);
+      };
+      $('ask-yes').onclick = () => done(true);
+      $('ask-no').onclick = () => done(false);
+      $('ask-yes').focus();
+    });
+  }
+
+  /* ---------- Export / Import ---------- */
+  $('btn-export').addEventListener('click', () => {
+    const data = {
+      app: 'vokabeltrainer',
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      words: state.words,
+      progress: state.progress
+    };
+    const text = JSON.stringify(data, null, 2);
+    $('export-text').value = text;
+    $('export-box').className = 'ask';
+    try {
+      const blob = new Blob([text], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'vokabeln-' + new Date().toISOString().slice(0, 10) + '.json';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1500);
+    } catch (err) { /* kein Datei-Download möglich – das Textfenster bleibt offen */ }
+  });
+
+  $('export-copy').addEventListener('click', async () => {
+    const ta = $('export-text');
+    ta.focus();
+    ta.select();
+    ta.setSelectionRange(0, ta.value.length);
+    try {
+      await navigator.clipboard.writeText(ta.value);
+      toast('Text kopiert ✔️');
+    } catch (err) {
+      toast('Bitte den markierten Text selbst kopieren.');
+    }
+  });
+
+  $('export-close').addEventListener('click', () => { $('export-box').className = 'ask hidden'; });
+
+  async function loadImportText(text) {
+    const msg = $('import-msg');
+    $('import-result').className = 'hidden';
+    try {
+      const data = JSON.parse(text);
+      const list = Array.isArray(data) ? data : (Array.isArray(data.words) ? data.words : null);
+      if (!list) throw new Error('Die Datei enthält keine Vokabelliste.');
+
+      const valid = list
+        .filter(w => w && typeof w.en === 'string' && typeof w.de === 'string' && w.en.trim() && w.de.trim())
+        .map(w => ({
+          id: w.id,
+          created: w.created,
+          en: w.en.trim(),
+          de: w.de.trim(),
+          example: w.example || '',
+          note: w.note || '',
+          swap: isSwapped(w.en, w.de)   // Vorschlag: Englisch und Deutsch tauschen
+        }));
+
+      pendingImport = {
+        words: valid,
+        progress: (!Array.isArray(data) && data.progress && typeof data.progress === 'object') ? data.progress : null,
+        total: list.length,
+        invalid: list.length - valid.length
+      };
+      setMsg(msg, '', '');
+      renderImportPreview();
+    } catch (err) {
+      pendingImport = null;
+      $('import-box').className = 'hidden';
+      setMsg(msg, 'Import nicht möglich: ' + (err.message || 'Die Datei konnte nicht gelesen werden.'), 'bad');
+    }
+  }
+
+  $('import-file').addEventListener('change', async e => {
+    const file = e.target.files[0];
+    e.target.value = '';
+    if (!file) return;
+    loadImportText(await file.text());
+  });
+
+  $('btn-import-paste').addEventListener('click', () => {
+    const t = $('import-paste').value.trim();
+    if (!t) { setMsg($('import-msg'), 'Bitte zuerst den kopierten Text einfügen.', 'bad'); return; }
+    loadImportText(t);
+  });
+
+  $('btn-import-cancel').addEventListener('click', () => {
+    pendingImport = null;
+    $('import-box').className = 'hidden';
+    setMsg($('import-msg'), 'Import abgebrochen. Es wurde nichts verändert.', 'info');
+  });
+
+  $('btn-import-ok').addEventListener('click', () => {
+    if (!pendingImport) return;
+    const imp = pendingImport;
+    const known = new Set(state.words.map(w => norm(w.en)));
+    const corrections = [];
+    let added = 0, skipped = 0;
+
+    imp.words.forEach(w => {
+      const swapIt = w.swap && w.selected !== false;
+      const en = swapIt ? w.de : w.en;
+      const de = swapIt ? w.en : w.de;
+      if (known.has(norm(en))) { skipped++; return; }
+      known.add(norm(en));
+      // id, created, example, note bleiben unverändert erhalten
+      state.words.push(makeWord({ id: w.id, created: w.created, en, de, example: w.example, note: w.note }));
+      added++;
+      if (swapIt) corrections.push({ en: w.en, de: w.de, newEn: en, newDe: de });
+    });
+
+    const adopt = imp.progress && state.progress.questions === 0 && (imp.progress.questions || 0) > 0;
+    if (adopt) {
+      state.progress = Object.assign(defaultProgress(), imp.progress);
+      state.progress.wrongIds = (state.progress.wrongIds || []).filter(id => state.words.some(w => w.id === id));
+    }
+    if (!saveState()) return;
+
+    pendingImport = null;
+    $('import-box').className = 'hidden';
+    const result = $('import-result');
+    result.className = '';
+    result.innerHTML =
+      '<p class="msg ok">✅ ' + added + ' Vokabel(n) übernommen' + (skipped ? ', ' + skipped + ' übersprungen' : '') + '.' +
+      (adopt ? ' Lernfortschritt ebenfalls übernommen.' : '') + '</p>' +
+      (corrections.length
+        ? '<details><summary><b>' + corrections.length + ' Einträge wurden automatisch korrigiert</b> (Liste anzeigen)</summary>' +
+          corrections.map(c =>
+            '<div class="list-item"><span class="muted">vorher: en „' + esc(c.en) + '“, de „' + esc(c.de) + '“</span>' +
+            '<b>nachher: en „' + esc(c.newEn) + '“, de „' + esc(c.newDe) + '“</b></div>'
+          ).join('') +
+          '</details>'
+        : '');
+    renderManage();
+    toast('Import abgeschlossen ✔️');
+  });
+
+  /* ---------- Lernen: Einrichtung ---------- */
+  function showLearnSetup() {
+    round = null;
+    $('learn-play').classList.add('hidden');
+    $('learn-setup').classList.remove('hidden');
+    renderLearnSetup();
+  }
+
+  function renderLearnSetup() {
+    const pick = $('pick-list');
+    const sorted = [...state.words].sort((a, b) => a.en.localeCompare(b.en, 'en', { sensitivity: 'base' }));
+    pick.innerHTML = sorted.length
+      ? sorted.map(w => '<label class="check"><input type="checkbox" value="' + w.id + '" checked> ' + esc(w.en) + ' – ' + esc(w.de) + '</label>').join('')
+      : '<p class="muted">Noch keine Vokabeln vorhanden.</p>';
+    $('wrong-count').textContent = '(' + state.progress.wrongIds.length + ')';
+    if (pendingScope) {
+      document.querySelector('input[name="scope"][value="' + pendingScope + '"]').checked = true;
+      pendingScope = null;
+    }
+    $('pick-box').classList.toggle('hidden', radio('scope') !== 'pick');
+    setMsg($('setup-msg'), '', '');
+    updateSetupVisibility();
+  }
+
+  $('learn-setup').addEventListener('change', e => {
+    if (e.target.name === 'scope') $('pick-box').classList.toggle('hidden', radio('scope') !== 'pick');
+    if (e.target.name === 'mode') updateSetupVisibility();
+  });
+
+  function updateSetupVisibility() {
+    const mode = radio('mode');
+    $('count-box').classList.toggle('hidden', mode === 'choice');
+    $('grade-info').classList.toggle('hidden', mode !== 'test');
+  }
+  $('pick-all').addEventListener('click', () => document.querySelectorAll('#pick-list input').forEach(i => { i.checked = true; }));
+  $('pick-none').addEventListener('click', () => document.querySelectorAll('#pick-list input').forEach(i => { i.checked = false; }));
+
+  $('btn-start').addEventListener('click', startRound);
+
+  function startRound() {
+    const msg = $('setup-msg');
+    const mode = radio('mode');
+    const scope = radio('scope');
+
+    if (!state.words.length) { setMsg(msg, 'Füge zuerst Vokabeln hinzu, dann kannst du üben.', 'info'); return; }
+    if (mode === 'choice' && state.words.length < 2) {
+      setMsg(msg, 'Für „Auswählen“ brauchst du mindestens 2 Vokabeln, damit es Antwortmöglichkeiten gibt.', 'bad');
+      return;
+    }
+
+    let pool;
+    if (scope === 'all') pool = [...state.words];
+    else if (scope === 'wrong') pool = state.words.filter(w => state.progress.wrongIds.includes(w.id));
+    else {
+      const ids = [...document.querySelectorAll('#pick-list input:checked')].map(i => i.value);
+      pool = state.words.filter(w => ids.includes(w.id));
+    }
+
+    if (!pool.length) {
+      setMsg(msg, scope === 'wrong'
+        ? 'Super, du hast gerade keine falsch beantworteten Vokabeln!'
+        : 'Bitte wähle mindestens eine Vokabel aus.', 'info');
+      return;
+    }
+
+    shuffle(pool);
+    const sel = $('count-select').value;
+    const wanted = mode === 'choice' ? ROUND_SIZE : (sel === 'all' ? pool.length : +sel);
+    const count = Math.min(wanted, pool.length);
+    const questions = pool.slice(0, count).map(w => {
+      // "write" fragt Deutsch → Englisch, "choice" Englisch → Deutsch, "mix" zufällig
+      let dir;
+      // Vokabeltest: immer Deutsch → Englisch, weil auf Englisch geschrieben wird
+      if (mode === 'write' || mode === 'test') dir = 'de-en';
+      else if (mode === 'choice') dir = 'en-de';
+      else dir = Math.random() < 0.5 ? 'de-en' : 'en-de';
+      const q = {
+        word: w,
+        dir,
+        prompt: dir === 'de-en' ? w.de : w.en,
+        answer: dir === 'de-en' ? w.en : w.de,
+        ok: false
+      };
+      if (mode === 'choice') q.options = makeOptions(w);
+      return q;
+    });
+
+    round = { mode, isTest: mode === 'test', questions, index: 0, correct: 0, points: 0, answered: false, shortBy: pool.length < wanted ? pool.length : 0 };
+    $('learn-setup').classList.add('hidden');
+    $('learn-play').classList.remove('hidden');
+    if (mode === 'test') renderTestQuestion(); else renderQuestion();
+  }
+
+  function makeOptions(w) {
+    const others = shuffle(state.words.filter(x => x.id !== w.id && norm(x.de) !== norm(w.de)))
+      .slice(0, 3)
+      .map(x => x.de);
+    return shuffle([w.de, ...others]);
+  }
+
+  /* ---------- Lernen: Runde ---------- */
+  function renderQuestion() {
+    const q = round.questions[round.index];
+    const n = round.questions.length;
+    $('play-count').textContent =
+      'Frage ' + (round.index + 1) + ' von ' + n + (round.shortBy ? ' (nur ' + n + ' Vokabeln verfügbar)' : '');
+    $('play-points').textContent = '⭐ ' + round.points + ' Punkte';
+    $('play-bar').style.width = (round.index / n * 100) + '%';
+    $('feedback').className = 'hidden';
+    $('btn-next').className = 'hidden';
+
+    const body = $('play-body');
+    if (q.options) {
+      body.innerHTML =
+        '<p class="muted" style="text-align:center">Was bedeutet das auf Deutsch?</p>' +
+        '<div class="big">' + esc(q.prompt) + '</div>' +
+        q.options.map((o, i) => '<button class="option" data-opt="' + i + '">' + (i + 1) + '. ' + esc(o) + '</button>').join('');
+    } else {
+      const label = q.dir === 'de-en' ? 'Wie heißt das auf Englisch?' : 'Wie heißt das auf Deutsch?';
+      body.innerHTML =
+        '<p class="muted" style="text-align:center">' + label + '</p>' +
+        '<div class="big">' + esc(q.prompt) + '</div>' +
+        '<input type="text" id="answer" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Deine Antwort …">' +
+        '<div class="row" style="margin-top:12px"><button id="btn-check">✔️ Prüfen</button></div>';
+      const f = $('answer');
+      if (f) f.focus();
+    }
+    round.answered = false;
+  }
+
+  // Groß-/Kleinschreibung, Apostrophe und Satzzeichen spielen keine Rolle
+  function cleanText(s) {
+    return String(s)
+      .toLowerCase()
+      .replace(/['’`]/g, '')
+      .replace(/[^\p{L}\p{N}\s]/gu, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  // Eine Lösung darf mehrere Schreibweisen haben: "Haus, Gebäude", "to eat" = "eat"
+  function answerVariants(answer) {
+    return String(answer)
+      .split(/[\/,;]/)
+      .map(x => x.replace(/\(.*?\)/g, '').trim())
+      .filter(Boolean)
+      .flatMap(x => [x, x.replace(/^to\s+/i, '')])
+      .map(cleanText)
+      .filter(Boolean);
+  }
+
+  // Wie viele Wörter müssen geändert, ergänzt oder entfernt werden? (Wortebene)
+  function wordDistance(a, b) {
+    const dp = [];
+    for (let i = 0; i <= a.length; i++) dp[i] = [i];
+    for (let j = 1; j <= b.length; j++) dp[0][j] = j;
+    for (let i = 1; i <= a.length; i++) {
+      for (let j = 1; j <= b.length; j++) {
+        dp[i][j] = Math.min(
+          dp[i - 1][j] + 1,
+          dp[i][j - 1] + 1,
+          dp[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)
+        );
+      }
+    }
+    return dp[a.length][b.length];
+  }
+
+  // Ergebnis: 'exact' (richtig), 'near' (Mehrwort-Antwort mit einem kleinen Fehler) oder 'wrong'
+  function judgeAnswer(given, answer) {
+    const g = cleanText(given);
+    if (!g) return 'wrong';
+    const variants = answerVariants(answer);
+    if (variants.includes(g)) return 'exact';
+
+    const gw = g.split(' ');
+    let best = Infinity;
+    variants.forEach(v => {
+      const vw = v.split(' ');
+      if (vw.length < 2) return; // Teilpunkte nur bei Mehrwort-Antworten
+      best = Math.min(best, wordDistance(gw, vw));
+    });
+    return best <= 1 ? 'near' : 'wrong';
+  }
+
+  function answerWrite() {
+    if (round && round.isTest) { testSubmit(); return; }
+    if (!round || round.answered) return;
+    const q = round.questions[round.index];
+    const input = $('answer');
+    if (!input) return;
+    if (!input.value.trim()) { input.focus(); return; }
+
+    const verdict = judgeAnswer(input.value, q.answer);
+    q.tries = (q.tries || 0) + 1;
+
+    if (verdict === 'exact') {
+      q.points = POINTS_PER_CORRECT;
+      finishAnswer(q, true, input.value, null);
+    } else if (verdict === 'near' && q.tries === 1) {
+      // Fast richtig: Teilpunkte sichern und einen zweiten Versuch erlauben
+      q.points = PARTIAL_POINTS;
+      round.points = round.questions.reduce((s, x) => s + (x.points || 0), 0);
+      showNearMiss(input.value, q.answer);
+    } else {
+      // Falsch, oder der zweite Versuch ist auch nicht genau: Teilpunkte bleiben erhalten
+      finishAnswer(q, false, input.value, null);
+    }
+  }
+
+  // Vergleicht die Eingabe Wort für Wort mit der ähnlichsten Lösung
+  function alignWords(given, answer) {
+    const rawTokens = String(given).trim().split(/\s+/)
+      .map(t => ({ raw: t, c: cleanText(t) }))
+      .filter(t => t.c);
+    const a = rawTokens.map(t => t.c);
+
+    let best = null, bestDist = Infinity;
+    answerVariants(answer).forEach(v => {
+      const vw = v.split(' ');
+      if (vw.length < 2) return;
+      const d = wordDistance(a, vw);
+      if (d < bestDist) { bestDist = d; best = vw; }
+    });
+    if (!best) return [];
+
+    // Tabelle aufbauen und dann rückwärts durchlaufen, um die Wortpaare zu finden
+    const dp = [];
+    for (let i = 0; i <= a.length; i++) dp[i] = [i];
+    for (let j = 1; j <= best.length; j++) dp[0][j] = j;
+    for (let i = 1; i <= a.length; i++) {
+      for (let j = 1; j <= best.length; j++) {
+        dp[i][j] = Math.min(
+          dp[i - 1][j] + 1,
+          dp[i][j - 1] + 1,
+          dp[i - 1][j - 1] + (a[i - 1] === best[j - 1] ? 0 : 1)
+        );
+      }
+    }
+
+    const out = [];
+    let i = a.length, j = best.length;
+    while (i > 0 || j > 0) {
+      if (i > 0 && j > 0 && dp[i][j] === dp[i - 1][j - 1] + (a[i - 1] === best[j - 1] ? 0 : 1)) {
+        out.push({ text: rawTokens[i - 1].raw, status: a[i - 1] === best[j - 1] ? 'ok' : 'bad' });
+        i--; j--;
+      } else if (i > 0 && dp[i][j] === dp[i - 1][j] + 1) {
+        out.push({ text: rawTokens[i - 1].raw, status: 'bad' });
+        i--;
+      } else {
+        out.push({ text: best[j - 1], status: 'missing' });
+        j--;
+      }
+    }
+    return out.reverse();
+  }
+
+  function showNearMiss(given, answer) {
+    const input = $('answer');
+    input.classList.add('wrong-input');
+    $('play-points').textContent = '⭐ ' + round.points + ' Punkte';
+
+    const parts = alignWords(given, answer).map(p => {
+      const cls = p.status === 'ok' ? 'w-ok' : p.status === 'bad' ? 'w-bad' : 'w-miss';
+      const label = p.status === 'missing' ? '+ ' + p.text + ' (fehlt)' : p.text;
+      return '<span class="' + cls + '">' + esc(label) + '</span>';
+    }).join('');
+
+    const fb = $('feedback');
+    fb.className = 'msg info';
+    fb.innerHTML =
+      '<b>Fast richtig!</b> Ein Wort passt noch nicht. Dafür gibt es schon ' + PARTIAL_POINTS +
+      ' Punkte. Das rot markierte Wort ist falsch oder falsch geschrieben. Versuch es noch einmal.' +
+      '<div class="word-line">' + parts + '</div>';
+    input.focus();
+    input.select();
+  }
+
+  function answerChoice(i) {
+    if (!round || round.answered) return;
+    const q = round.questions[round.index];
+    finishAnswer(q, q.options[i] === q.answer, q.options[i], i);
+  }
+
+  function finishAnswer(q, ok, given, chosenIndex) {
+    round.answered = true;
+    q.given = given;
+    if (q.points === undefined) q.points = ok ? POINTS_PER_CORRECT : 0;
+    q.ok = q.points === POINTS_PER_CORRECT;
+    if (q.ok) round.correct++;
+    round.points = round.questions.reduce((s, x) => s + (x.points || 0), 0);
+
+    if (q.options) {
+      document.querySelectorAll('.option').forEach((b, i) => {
+        b.disabled = true;
+        if (q.options[i] === q.answer) b.classList.add('correct');
+        else if (i === chosenIndex) b.classList.add('wrong');
+      });
+    } else {
+      const input = $('answer');
+      if (input) input.disabled = true;
+      const check = $('btn-check');
+      if (check) check.className = 'hidden';
+    }
+
+    const fb = $('feedback');
+    const full = q.points === POINTS_PER_CORRECT;
+    fb.className = 'msg ' + (full ? 'ok' : q.points > 0 ? 'info' : 'bad');
+    fb.innerHTML = full
+      ? '🎉 Richtig! ' + q.points + ' Punkte'
+      : q.points > 0
+        ? 'Teilweise richtig, dafür ' + q.points + ' Punkte. Die vollständige Lösung ist: <b>' + esc(q.answer) + '</b>'
+        : 'Nicht schlimm, so lernst du dazu! Die richtige Lösung ist: <b>' + esc(q.answer) + '</b>';
+
+    $('play-points').textContent = '⭐ ' + round.points + ' Punkte';
+    const next = $('btn-next');
+    next.textContent = round.index + 1 >= round.questions.length ? 'Ergebnis anzeigen 🏁' : 'Weiter ▶️';
+    next.className = '';
+    next.focus();
+  }
+
+  /* ---------- Vokabeltest ---------- */
+  const GRADE_NAMES = { 1: 'sehr gut', 2: 'gut', 3: 'befriedigend', 4: 'ausreichend', 5: 'mangelhaft', 6: 'ungenügend' };
+
+  // Notenschlüssel nach Prozent
+  function gradeFor(pct) {
+    if (pct >= 92) return 1;
+    if (pct >= 81) return 2;
+    if (pct >= 67) return 3;
+    if (pct >= 50) return 4;
+    if (pct >= 30) return 5;
+    return 6;
+  }
+
+  function renderTestQuestion() {
+    const q = round.questions[round.index];
+    const n = round.questions.length;
+    const label = q.dir === 'de-en' ? 'Wie heißt das auf Englisch?' : 'Wie heißt das auf Deutsch?';
+    $('play-count').textContent = 'Frage ' + (round.index + 1) + ' von ' + n +
+      (round.shortBy ? ' (nur ' + n + ' Vokabeln verfügbar)' : '');
+    $('play-points').textContent = '📝 Vokabeltest';
+    $('play-bar').style.width = (round.index / n * 100) + '%';
+    $('feedback').className = 'hidden';
+    $('btn-next').className = 'hidden';
+    $('play-body').innerHTML =
+      '<p class="muted" style="text-align:center">' + label + '</p>' +
+      '<div class="big">' + esc(q.prompt) + '</div>' +
+      '<input type="text" id="answer" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Deine Antwort …">' +
+      '<div class="row" style="margin-top:12px"><button id="btn-check">' +
+        (round.index + 1 >= n ? 'Test abgeben 🏁' : 'Weiter ▶️') + '</button></div>';
+    round.answered = false;
+    $('answer').focus();
+  }
+
+  // Keine Rückmeldung während des Tests: Antwort speichern und zur nächsten Frage
+  function testSubmit() {
+    const q = round.questions[round.index];
+    const given = $('answer') ? $('answer').value : '';
+    q.given = given;
+    q.verdict = given.trim() ? judgeAnswer(given, q.answer) : 'wrong';
+    round.index++;
+    if (round.index >= round.questions.length) finishTest();
+    else renderTestQuestion();
+  }
+
+  function finishTest() {
+    const qs = round.questions;
+    const n = qs.length;
+    qs.forEach(q => {
+      q.points = q.verdict === 'exact' ? POINTS_PER_CORRECT : q.verdict === 'near' ? PARTIAL_POINTS : 0;
+    });
+    const points = qs.reduce((s, q) => s + q.points, 0);
+    const pct = Math.round(points / (n * POINTS_PER_CORRECT) * 100);
+    const grade = gradeFor(pct);
+    const exact = qs.filter(q => q.verdict === 'exact').length;
+    const partial = qs.filter(q => q.verdict === 'near').length;
+
+    const p = state.progress;
+    const before = new Set(BADGES.filter(b => b.test(p)).map(b => b.id));
+    p.questions += n;
+    p.correct += exact;
+    p.wrong += n - exact;
+    p.points += points;
+    qs.forEach(q => {
+      const id = q.word.id;
+      if (q.verdict === 'exact') p.wrongIds = p.wrongIds.filter(x => x !== id);
+      else if (!p.wrongIds.includes(id)) p.wrongIds.push(id);
+    });
+    p.wrongIds = p.wrongIds.filter(id => state.words.some(w => w.id === id));
+    p.rounds.push({ date: new Date().toISOString(), mode: 'test', correct: exact, total: n, points, percent: pct, grade });
+    if (p.rounds.length > 50) p.rounds = p.rounds.slice(-50);
+    saveState();
+
+    const newBadges = BADGES.filter(b => !before.has(b.id) && b.test(p));
+    round = null;
+    $('play-bar').style.width = '100%';
+    $('play-count').textContent = 'Test beendet';
+    $('play-points').textContent = '⭐ ' + points + ' Punkte';
+    $('feedback').className = 'hidden';
+    $('btn-next').className = 'hidden';
+    $('play-body').innerHTML =
+      '<h2 style="text-align:center">Dein Ergebnis</h2>' +
+      '<div class="big">Note ' + grade + '</div>' +
+      '<p class="muted" style="text-align:center">' + GRADE_NAMES[grade] + ' · ' + pct + ' %</p>' +
+      '<div class="stats" style="margin-top:12px">' +
+        '<div class="stat"><b>' + exact + ' von ' + n + '</b>richtig</div>' +
+        '<div class="stat"><b>' + partial + '</b>teilweise</div>' +
+        '<div class="stat"><b>' + points + '</b>Punkte</div>' +
+      '</div>' +
+      (newBadges.length ? '<p class="msg ok" style="margin-top:14px">🏅 Neues Abzeichen: ' + newBadges.map(b => b.icon + ' ' + esc(b.name)).join(', ') + '</p>' : '') +
+      '<h3>Auflösung</h3>' +
+      qs.map(q => {
+        const icon = q.verdict === 'exact' ? '✅' : q.verdict === 'near' ? '🟡' : '❌';
+        const given = q.given && q.given.trim() ? esc(q.given) : '<i>keine Antwort</i>';
+        return '<div class="list-item"><span>' + icon + ' ' + esc(q.prompt) + '</span>' +
+          '<span>Deine Antwort: ' + given + '</span><b>Lösung: ' + esc(q.answer) + '</b></div>';
+      }).join('') +
+      '<div class="row center" style="margin-top:16px"><button id="btn-again">🔁 Neuer Test</button>' +
+      '<button class="secondary" data-go="progress">🏆 Fortschritt</button></div>';
+  }
+
+  function nextQuestion() {
+    if (!round || !round.answered) return;
+    round.index++;
+    if (round.index >= round.questions.length) finishRound();
+    else renderQuestion();
+  }
+
+  function finishRound() {
+    const total = round.questions.length;
+    const pct = Math.round(round.correct / total * 100);
+    const p = state.progress;
+    const before = new Set(BADGES.filter(b => b.test(p)).map(b => b.id));
+
+    p.questions += total;
+    p.correct += round.correct;
+    p.wrong += total - round.correct;
+    p.points += round.points;
+
+    round.questions.forEach(q => {
+      const id = q.word.id;
+      if (q.ok) p.wrongIds = p.wrongIds.filter(x => x !== id);
+      else if (!p.wrongIds.includes(id)) p.wrongIds.push(id);
+    });
+    p.wrongIds = p.wrongIds.filter(id => state.words.some(w => w.id === id));
+
+    p.rounds.push({
+      date: new Date().toISOString(),
+      mode: round.mode,
+      correct: round.correct,
+      total,
+      points: round.points,
+      percent: pct
+    });
+    if (p.rounds.length > 50) p.rounds = p.rounds.slice(-50);
+    saveState();
+
+    const newBadges = BADGES.filter(b => !before.has(b.id) && b.test(p));
+    const stars = pct >= 80 ? 3 : pct >= 50 ? 2 : 1;
+    const msgText = pct >= 80
+      ? 'Super gemacht! 🎉'
+      : pct >= 50
+        ? 'Gut gemacht, weiter so! 👍'
+        : 'Toll, dass du dranbleibst! Die falschen Vokabeln kommen beim nächsten Mal wieder. 💪';
+
+    round = null;
+    $('play-bar').style.width = '100%';
+    $('play-count').textContent = 'Runde beendet';
+    $('play-points').textContent = '⭐ ' + round_points(p, newBadges) + ' Punkte';
+    $('feedback').className = 'hidden';
+    $('btn-next').className = 'hidden';
+    $('play-body').innerHTML =
+      '<h2 style="text-align:center">' + msgText + '</h2>' +
+      '<div class="stars">' + '★'.repeat(stars) + '☆'.repeat(3 - stars) + '</div>' +
+      '<div class="stats" style="margin-top:12px">' +
+        '<div class="stat"><b>' + (total ? p.rounds[p.rounds.length - 1].correct : 0) + ' von ' + total + '</b>richtig</div>' +
+        '<div class="stat"><b>' + pct + ' %</b>Trefferquote</div>' +
+        '<div class="stat"><b>' + p.rounds[p.rounds.length - 1].points + '</b>Punkte</div>' +
+      '</div>' +
+      (newBadges.length ? '<p class="msg ok" style="margin-top:14px">🏅 Neues Abzeichen: ' + newBadges.map(b => b.icon + ' ' + esc(b.name)).join(', ') + '</p>' : '') +
+      '<div class="row center" style="margin-top:16px">' +
+        '<button id="btn-again">🔁 Nochmal üben</button>' +
+        '<button class="secondary" data-go="progress">🏆 Fortschritt ansehen</button>' +
+      '</div>';
+  }
+
+  function round_points(p, newBadges) {
+    return p.rounds.length ? p.rounds[p.rounds.length - 1].points : 0;
+  }
+
+  $('learn-play').addEventListener('keydown', e => {
+    if (e.target.id === 'answer' && e.key === 'Enter') {
+      e.preventDefault();
+      if (round && round.answered) nextQuestion(); else answerWrite();
+    }
+  });
+
+  $('play-body').addEventListener('click', e => {
+    if (e.target.id === 'btn-check') { answerWrite(); return; }
+    if (e.target.id === 'btn-again') { showLearnSetup(); return; }
+    const opt = e.target.closest('.option');
+    if (opt && !opt.disabled) answerChoice(+opt.dataset.opt);
+  });
+
+  $('btn-next').addEventListener('click', nextQuestion);
+
+  $('btn-quit').addEventListener('click', async () => {
+    if (!round) { showLearnSetup(); return; }
+    if (await askConfirm('Runde wirklich abbrechen? Die Ergebnisse dieser Runde werden nicht gespeichert.')) showLearnSetup();
+  });
+
+  // Tastatur: Zahlen 1–4 bei Auswahl, Enter zum Weitermachen
+  document.addEventListener('keydown', e => {
+    if (!round || !$('learn').classList.contains('active')) return;
+    if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT') return;
+    const q = round.questions[round.index];
+    if (e.key === 'Enter' && round.answered) { e.preventDefault(); nextQuestion(); }
+    else if (!round.answered && q && q.options && /^[1-4]$/.test(e.key)) {
+      const b = document.querySelectorAll('.option')[+e.key - 1];
+      if (b) b.click();
+    }
+  });
+
+  /* ---------- Fortschritt ---------- */
+  function renderProgress() {
+    const p = state.progress;
+    const pct = p.questions ? Math.round(p.correct / p.questions * 100) : 0;
+    $('prog-stats').innerHTML =
+      '<div class="stat"><b>' + p.questions + '</b>Fragen</div>' +
+      '<div class="stat"><b>' + p.correct + '</b>richtig</div>' +
+      '<div class="stat"><b>' + p.wrong + '</b>falsch</div>' +
+      '<div class="stat"><b>' + p.points + '</b>Punkte</div>' +
+      '<div class="stat"><b>' + pct + ' %</b>Trefferquote</div>' +
+      '<div class="stat"><b>' + p.rounds.length + '</b>Runden</div>';
+
+    $('badges').innerHTML = BADGES.map(b => {
+      const earned = b.test(p);
+      return '<span class="badge ' + (earned ? 'earned' : '') + '">' + (earned ? b.icon : '🔒') + ' ' + esc(b.name) + '</span>';
+    }).join('');
+
+    $('prog-rounds').innerHTML = p.rounds.length
+      ? p.rounds.slice().reverse().slice(0, 10).map(r =>
+          '<div class="list-item"><span>' + new Date(r.date).toLocaleDateString('de-DE') + ' · ' + (MODE_NAMES[r.mode] || '') + '</span>' +
+          '<b>' + r.correct + '/' + r.total + ' · ' + r.points + ' P</b></div>'
+        ).join('')
+      : '<p class="muted">Noch keine Runde gespielt.</p>';
+
+    $('btn-practice-wrong').disabled = p.wrongIds.length === 0;
+  }
+
+  $('btn-practice-wrong').addEventListener('click', () => {
+    pendingScope = 'wrong';
+    go('learn');
+    if (location.hash === '#learn') renderLearnSetup();
+  });
+
+  $('btn-reset-progress').addEventListener('click', async () => {
+    if (!await askConfirm('Den gesamten Lernfortschritt zurücksetzen? Deine Vokabeln bleiben erhalten.')) return;
+    state.progress = defaultProgress();
+    saveState();
+    renderProgress();
+    toast('Fortschritt zurückgesetzt');
+  });
+
+  /* ---------- Start der App ---------- */
+  $('app-version').textContent = 'Version ' + APP_VERSION;
+  showView(location.hash.slice(1) || 'home');
+})();
+</script>
+<script>
+  // Offline-Unterstützung und Installation als Web-App (nur über https oder localhost möglich)
+  if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').catch(() => { /* ohne Offline-Modus weiter nutzbar */ });
+    });
+  }
+</script>
+</body>
+</html>
+<!--
+VERSIONSHISTORIE – Koalas da Vinci
+
+Version 1.0
+- Erste Version: Start, Hinzufügen (manuell, Foto-Texterkennung), Verwalten,
+  Lernen (Schreiben, Auswählen, Mix), Fortschritt, Export und Import.
+
+Version 1.0.1
+- Neuer Bereich „Aus Text einfügen“ mit derselben Prüfliste wie beim Foto-Import.
+
+Version 1.0.2
+- Teilpunkte (5 von 10) und ein zweiter Versuch bei kleinen Fehlern
+  in Mehrwort-Antworten.
+
+Version 1.1
+- Umbenennung in „Koalas da Vinci“.
+- Koala-Design in Eukalyptus-Grün.
+- Bei Teilpunkten wird nur das falsche oder falsch geschriebene Wort rot
+  markiert, der Rest wird grün angezeigt.
+- Versionsnummer im Kopf der App und diese Historie am Dateiende.
+
+Version 1.1.1
+- Fehlerbehebung Texterkennung: Der Start des Erkennungs-Workers wird bei
+  Fehlern ein zweites Mal ohne Blob-URL versucht. Schlägt auch das fehl,
+  erscheint eine verständliche Meldung.
+
+Version 1.2
+- Hinweis „powered by Tameo“ am Seitenende.
+- Versionsnummer auch im Dateinamen (vokabeltrainer-v1.2.html).
+
+Version 1.2.1
+- Texterkennung: dritter Startversuch, bei dem der Worker-Code selbst geladen
+  und lokal gestartet wird. Hilft, wenn die Vorschau den direkten Start blockiert.
+
+Version 1.6
+- Web-App: Installierbar als Symbol auf dem Home-Bildschirm (iPhone und Android), startet im Vollbild und funktioniert auch offline.
+
+Version 1.5.2
+- Vokabeltest: Es wird immer vom Deutschen ins Englische übersetzt, du schreibst also Englisch.
+
+Version 1.5.1
+- Bestätigungen (z. B. Löschen) erscheinen jetzt als eigenes Fenster in der App statt als Browser-Dialog.
+  Dadurch funktionieren sie auch in der Artifact-Vorschau und auf dem iPhone.
+- Sichern zeigt die Vokabeln als Text zum Kopieren (zusätzlich wird eine .json-Datei geladen, wenn der Browser das erlaubt).
+- Import: Der kopierte Text kann direkt eingefügt werden („Oder kopierten Text hier einfügen“).
+
+Version 1.5
+- Lernen, Schreiben und Mix: Anzahl der Wörter pro Runde wählbar (5, 10, 15, 20 oder alle).
+- Neue Übungsart „Vokabeltest“: Schreibtest ohne Rückmeldung während des Tests.
+  Am Ende gibt es eine Note nach Schulnotenschlüssel und die Auflösung aller Wörter.
+  Fast richtige Antworten zählen halb.
+
+Version 1.4
+- Lehrbuch-Modus in „Aus Text einfügen“: entfernt Lautschrift, Grammatikhinweise
+  und Seitenzahlen. Einträge mit Lautschrift werden getrennt, Blöcke werden nur
+  bei gleicher Länge Zeile für Zeile gepaart. Alles andere landet ohne Partner
+  in der Prüfliste.
+
+Version 1.3
+- Beim Import werden vertauschte Paare erkannt (deutsches Wort im Englisch-Feld).
+  Die Erkennung arbeitet nur mit eindeutigen Signalwörtern und ändert bei Unsicherheit nichts.
+- Vor dem Import kann jedes erkannte Paar einzeln abgewählt werden.
+- Nach dem Import zeigt eine ausklappbare Liste, welche Einträge korrigiert wurden.
+- Neue Prüfung „Gespeicherte Vokabeln prüfen“ im Bereich Verwalten.
+- Button „Alle Einträge umdrehen“ im Bereich Verwalten (mit Rückfrage).
+- Id, Erstellungsdatum, Beispielsatz und Anmerkung bleiben beim Import erhalten.
+-->
+
