@@ -1,6 +1,6 @@
 // Koalas da Vinci – Offline-Unterstützung.
 // Bei jeder neuen Version die CACHE_NAME erhöhen, sonst bleibt die alte Version im Cache.
-const CACHE_NAME = 'koalas-v1.6';
+const CACHE_NAME = 'koalas-v1.7';
 const APP_FILES = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png', './icon-180.png'];
 
 self.addEventListener('install', event => {
